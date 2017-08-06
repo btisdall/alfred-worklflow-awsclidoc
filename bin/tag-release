@@ -1,0 +1,39 @@
+#!/usr/bin/env zsh
+
+set -eu
+
+TAG=$1
+
+cat <<EOF > src/README.txt
+
+AWSCLI Doc
+==========
+
+Display web documentation for an awscli command
+
+Version
+=======
+
+${TAG}
+EOF
+
+git add src/README.txt
+git ci -m "Bump version to ${TAG}" --no-verify
+git tag "${TAG}"
+git push origin master
+git push origin "${TAG}"
+
+export GITHUB_REPO="$(git remote show origin -n|grep Fetch|cut -d/ -f2|sed 's/\.git$//')"
+
+gothub release -t "${TAG}"
+
+mkdir -p out
+(
+  cd src
+  find . -name '*.pyc' -delete
+  awp --export -v "$(echo ${TAG} | sed 's/^v//')"
+)
+
+ARTIFACT_NAME="$(basename $(cat src/packager.json|jq '.export_file' -r))"
+ARTIFACT_PATH="out/${ARTIFACT_NAME}"
+gothub upload -t "${TAG}" -f "${ARTIFACT_PATH}" -n "${ARTIFACT_NAME}"

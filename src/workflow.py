@@ -3,7 +3,6 @@
 
 import os
 import sys
-import json
 import subprocess
 
 from workflow import Workflow, MATCH_SUBSTRING
@@ -16,10 +15,12 @@ def main(wf):
 
     # We need to pass an invalid command (in this case "_") to `aws` in order
     # for it to spit out the list of valid commands.
-    commands = subprocess.check_output("aws _ 2>&1|grep '|'|sed 's/|//'",
-                                       shell=True).split()
+    def get_commands():
+      return subprocess.check_output("aws _ 2>&1|grep '|'|sed 's/|//'",
+                                       shell=True)
 
-    results = wf.filter(query, commands,
+    results = wf.filter(query,
+                        wf.cached_data('commands', get_commands, max_age=600).split(),
                         match_on=MATCH_SUBSTRING)
 
     for i in results:

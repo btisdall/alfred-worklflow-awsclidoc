@@ -1,0 +1,11 @@
+{
+  "export_file": "../out/awsclidoc.alfredworkflow",
+  "bundle_id": "eu.tisdall.awsclidoc",
+  "readme": "README.txt",
+  "resources": [
+      "icon.png",
+      "icons",
+      "workflow*",
+      "dostuff/data/*.json"
+  ]
+}
