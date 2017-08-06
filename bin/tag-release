@@ -1,0 +1,34 @@
+#!/usr/bin/env zsh
+
+set -eu
+
+TAG="${1:-}"
+TAG_RX="^v[0-9]+\.[0-9]+\.[0-9]+$"
+
+if ! [[ "${TAG}" =~ ${TAG_RX} ]]; then
+  echo "Tag must match ${TAG_RX}"
+  exit 1
+fi
+
+sed "s/%%VERSION%%/${TAG}/" src/README.txt.tmpl > src/README.txt
+
+git add src/README.txt
+git ci -m "Bump version to ${TAG}" --no-verify
+git tag "${TAG}"
+git push origin master
+git push origin "${TAG}"
+
+export GITHUB_REPO="$(git remote show origin -n|grep Fetch|cut -d/ -f2|sed 's/\.git$//')"
+
+gothub release -t "${TAG}"
+
+mkdir -p out
+(
+  cd src
+  find . -name '*.pyc' -delete
+  awp --export -v "$(echo ${TAG} | sed 's/^v//')"
+)
+
+ARTIFACT_NAME="$(basename $(cat src/packager.json|jq '.export_file' -r))"
+ARTIFACT_PATH="out/${ARTIFACT_NAME}"
+gothub upload -t "${TAG}" -f "${ARTIFACT_PATH}" -n "${ARTIFACT_NAME}"
