@@ -121,6 +121,6 @@ query=$1
 	<key>version</key>
 	<string>v0.0.3</string>
 	<key>webaddress</key>
-	<string></string>
+	<string>https://github.com/btisdall/alfred-worklflow-awsclidoc</string>
 </dict>
 </plist>
